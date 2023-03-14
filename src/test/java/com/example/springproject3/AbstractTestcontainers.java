@@ -42,7 +42,7 @@ public abstract class AbstractTestcontainers {
         registry.add("spring.datasource.username",
                 postgreSQLContainer::getUsername
         );
-        registry.add("spring.datasource.username",
+        registry.add("spring.datasource.password",
                 postgreSQLContainer::getPassword
         );
     }
