@@ -1,5 +1,5 @@
 package com.example.springproject3.customer;
 
-public record CustomerUpdateRequest(Integer id,String name,
+public record CustomerUpdateRequest(String name,
                                     String email,Integer age) {
 }

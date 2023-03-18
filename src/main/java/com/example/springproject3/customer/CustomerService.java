@@ -13,7 +13,7 @@ import java.util.Optional;
 public class CustomerService {
     private final CustomerDao customerDao;
 
-    public CustomerService(@Qualifier("jdbc") CustomerDao customerDao) {
+    public CustomerService(@Qualifier("jpa") CustomerDao customerDao) {
         this.customerDao = customerDao;
     }
 
@@ -23,7 +23,7 @@ public class CustomerService {
 
     public Customer getCustomerById(Integer id){
         return customerDao.selectCustomerById(id).orElseThrow(() ->
-            new ResourceNotFoundException("customer with id [%s] not found".formatted(id))
+            new ResourceNotFoundException("用户id [%s] 不存在".formatted(id))
         );
     }
 
