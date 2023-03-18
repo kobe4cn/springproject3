@@ -13,6 +13,19 @@ services:
     networks:
       - postgres
     restart: unless-stopped
+  spring3-api:
+    container_name: spring3-api
+    image: kobe4cn/springboot3-api
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/customer
+    ports:
+      - 8080:8080
+    networks:
+      - postgres
+    depends_on:
+      - db
+    restart: unless-stopped
+
   pgadmin:
     container_name: pgadmin
     image: dpage/pgadmin4
