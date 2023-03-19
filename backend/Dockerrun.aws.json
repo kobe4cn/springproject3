@@ -1,6 +1,5 @@
 {
   "AWSEBDockerrunVersion": 2,
-
   "containerDefinitions": [
     {
       "name": "spring3-api",

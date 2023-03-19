@@ -1,4 +1,6 @@
 name: CD - Deploy Backend
+#环境名称：spring3api-env
+#应用名称：spring3-api
 
 on:
   workflow_dispatch:
