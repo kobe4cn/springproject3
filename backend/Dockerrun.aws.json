@@ -4,7 +4,7 @@
   "containerDefinitions": [
     {
       "name": "spring3-api",
-      "image": "kobe4cn/springboot3-api:latest",
+      "image": "kobe4cn/springboot3-api:19.03.2023.13.46.31",
       "essential": true,
       "memory": 512,
       "portMappings": [
