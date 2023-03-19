@@ -20,7 +20,7 @@ jobs:
           POSTGRES_USER: kevin
           POSTGRES_PASSWORD: password
           POSTGRES_DB: customer
-        port:
+        ports:
           - 5432:5432
         # Set health checks to wait until postgres has started
         options: >-
