@@ -53,10 +53,13 @@ jobs:
       - name: 使用maven 验证打包，同时设置pom.xml文件里面docker.image.tag属性，以便jib推送docker的时候使用
         run: mvn -ntp -B verify -Ddocker.image.tag=${{steps.build-number.outputs.BUILD_NUMBER}} jib:build
       - name: 更新Dockerrun.aws.json文件中的image拉取版本号
-        run: echo "更新Dockerrun.aws.json 前"
-             cat Dockerrun.aws.json
-             sed -i -E 's_(kobe4cn/springboot3-api:)([^"]*)_\1'${{steps.build-number.outputs.BUILD_NUMBER}}'_' Dockerrun.aws.json
-             cat Dockerrun.aws.json
+        run: ｜ 
+          echo "更新Dockerrun.aws.json 前"
+          cat Dockerrun.aws.json
+          echo "开始更新dockerrun文件"
+          sed -i -E 's_(kobe4cn/springboot3-api:)([^"]*)_\1'${{steps.build-number.outputs.BUILD_NUMBER}}'_' Dockerrun.aws.json
+          echo "更新完dockerrun文件"
+          cat Dockerrun.aws.json
       - name: 部署Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v21
         with:
@@ -70,8 +73,8 @@ jobs:
           deployment_package: backend/Dockerrun.aws.json
       - name: 提交Dockerrun.aws.json
         run: |
-            git config user.name github-actions
-            git config user.email github-actions@github.com
-            git add .
-            git commit -m "更新 Dockerrun.aws.json docker image tag ${{ steps.build-number.outputs.BUILD_NUMBER }}"
-            git push
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "更新 Dockerrun.aws.json docker image tag ${{ steps.build-number.outputs.BUILD_NUMBER }}"
+          git push
