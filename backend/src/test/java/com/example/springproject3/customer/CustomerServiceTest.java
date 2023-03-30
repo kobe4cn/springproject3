@@ -16,6 +16,7 @@ import static org.mockito.Mockito.*;
 
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
@@ -24,9 +25,11 @@ class CustomerServiceTest {
     private CustomerService underTest;
     @Mock
     private CustomerDao customerDao;
+    @Mock
+    private PasswordEncoder encoder;
     @BeforeEach
     void setUp() {
-        underTest=new CustomerService(customerDao);
+        underTest=new CustomerService(customerDao, encoder);
 
     }
 
@@ -44,8 +47,8 @@ class CustomerServiceTest {
     void cangetCustomerById() {
         int id=10;
         Customer customer=new Customer(
-                id,"kevin","kevin.yang@lianwei.com.cn",40
-        );
+                id,"kevin","kevin.yang@lianwei.com.cn",40,Gender.MALE,
+                "password");
         Mockito.when(customerDao.selectCustomerById(id)).thenReturn(Optional.of(customer));
         assertThat(underTest.getCustomerById(id)).isEqualTo(customer);
     }
@@ -66,7 +69,7 @@ class CustomerServiceTest {
     void addCustomer() {
         String email="kevin.yang@lianwei.com.cn";
         Mockito.when(customerDao.existsPersonWithEmail(email)).thenReturn(false);
-        CustomerRegistrationRquest request=new CustomerRegistrationRquest("kevin",email,40);
+        CustomerRegistrationRquest request=new CustomerRegistrationRquest("kevin",email,40,Gender.MALE,"password");
 
         underTest.addCustomer(request);
 
@@ -78,6 +81,7 @@ class CustomerServiceTest {
         assertThat(value.getAge()).isEqualTo(request.age());
         assertThat(value.getEmail()).isEqualTo(request.email());
         assertThat(value.getName()).isEqualTo(request.name());
+        assertThat(value.getPassword()).isEqualTo(encoder.encode("password"));
     }
 
     @Test
@@ -85,7 +89,7 @@ class CustomerServiceTest {
         String email="kevin.yang@lianwei.com.cn";
         Mockito.when(customerDao.existsPersonWithEmail(email)).thenReturn(true);
 
-        CustomerRegistrationRquest request=new CustomerRegistrationRquest("kevin",email,40);
+        CustomerRegistrationRquest request=new CustomerRegistrationRquest("kevin",email,40,Gender.MALE,"password");
         assertThatThrownBy(() -> underTest.addCustomer(request)).isInstanceOf(DuplicateResourceException.class)
                         .hasMessageContaining("电子邮件 [%s] 已经存在".formatted(email));
 
@@ -126,9 +130,9 @@ class CustomerServiceTest {
     @Test
     void updateCustomerwithName() {
         int id=1;
-        Customer customer=new Customer(id,"kevin","kevin.yang@lianwei.com.cn",40);
+        Customer customer=new Customer(id,"kevin","kevin.yang@lianwei.com.cn",40, Gender.MALE, "password");
         Mockito.when(customerDao.selectCustomerById(id)).thenReturn(Optional.of(customer));
-        CustomerUpdateRequest updateRequest = new CustomerUpdateRequest("kevin1", null, null);
+        CustomerUpdateRequest updateRequest = new CustomerUpdateRequest("kevin1", null, null,null,null);
         underTest.updateCustomer(id,updateRequest);
         ArgumentCaptor<Customer> argumentCaptor=ArgumentCaptor.forClass(Customer.class);
         verify(customerDao).updateCustomer(argumentCaptor.capture());
@@ -142,9 +146,9 @@ class CustomerServiceTest {
     @Test
     void updateCustomerwithEmail() {
         int id=1;
-        Customer customer=new Customer(id,"kevin","kevin.yang@lianwei.com.cn",40);
+        Customer customer=new Customer(id,"kevin","kevin.yang@lianwei.com.cn",40, Gender.MALE, "password");
         Mockito.when(customerDao.selectCustomerById(id)).thenReturn(Optional.of(customer));
-        CustomerUpdateRequest updateRequest = new CustomerUpdateRequest(null, "kevin@lianwei.com.cn", null);
+        CustomerUpdateRequest updateRequest = new CustomerUpdateRequest(null, "kevin@lianwei.com.cn", null,null,null);
         underTest.updateCustomer(id,updateRequest);
         ArgumentCaptor<Customer> argumentCaptor=ArgumentCaptor.forClass(Customer.class);
         verify(customerDao).updateCustomer(argumentCaptor.capture());
@@ -158,10 +162,10 @@ class CustomerServiceTest {
     @Test
     void updateCustomerwithAge() {
         int id=1;
-        Customer customer=new Customer(id,"kevin","kevin.yang@lianwei.com.cn",40);
+        Customer customer=new Customer(id,"kevin","kevin.yang@lianwei.com.cn",40, Gender.MALE, "password");
 
         Mockito.when(customerDao.selectCustomerById(id)).thenReturn(Optional.of(customer));
-        CustomerUpdateRequest updateRequest = new CustomerUpdateRequest(null, null, 5);
+        CustomerUpdateRequest updateRequest = new CustomerUpdateRequest(null, null, 5,null,null);
         underTest.updateCustomer(id,updateRequest);
         ArgumentCaptor<Customer> argumentCaptor=ArgumentCaptor.forClass(Customer.class);
         verify(customerDao).updateCustomer(argumentCaptor.capture());
@@ -175,9 +179,9 @@ class CustomerServiceTest {
     void updateCustomerwithNochange() {
         int id=1;
 
-        Customer customer=new Customer(id,"kevin","kevin.yang@lianwei.com.cn",40);
+        Customer customer=new Customer(id,"kevin","kevin.yang@lianwei.com.cn",40,Gender.MALE, "password");
         Mockito.when(customerDao.selectCustomerById(id)).thenReturn(Optional.of(customer));
-        CustomerUpdateRequest updateRequest = new CustomerUpdateRequest(customer.getName(), customer.getEmail(), customer.getAge());
+        CustomerUpdateRequest updateRequest = new CustomerUpdateRequest(customer.getName(), customer.getEmail(), customer.getAge(),customer.getGender(),customer.getPassword());
         assertThatThrownBy(() -> underTest.updateCustomer(id,updateRequest)).isInstanceOf(BadRequestException.class).hasMessageContaining("对于ID [%s]，没有更新的内容".formatted(id));
         verify(customerDao,never()).updateCustomer(any());
     }
@@ -185,9 +189,9 @@ class CustomerServiceTest {
     @Test
     void updateCustomerwithEmailExist() {
         int id=1;
-        Customer customer=new Customer(id,"kevin","kevin.yang@lianwei.com.cn",40);
+        Customer customer=new Customer(id,"kevin","kevin.yang@lianwei.com.cn",40, Gender.MALE, "password");
         Mockito.when(customerDao.selectCustomerById(id)).thenReturn(Optional.of(customer));
-        CustomerUpdateRequest updateRequest = new CustomerUpdateRequest(null, "kkk@suba.cincb", null);
+        CustomerUpdateRequest updateRequest = new CustomerUpdateRequest(null, "kkk@suba.cincb", null,null,null);
         Mockito.when(customerDao.existsPersonWithEmail(updateRequest.email())).thenReturn(true);
 
 

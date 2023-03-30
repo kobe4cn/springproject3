@@ -3,6 +3,7 @@ package com.example.springproject3.journey;
 import com.example.springproject3.customer.Customer;
 import com.example.springproject3.customer.CustomerRegistrationRquest;
 import com.example.springproject3.customer.CustomerUpdateRequest;
+import com.example.springproject3.customer.Gender;
 import com.github.javafaker.Faker;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +33,10 @@ public class CustomerIntegrationTest {
         String name = faker.name().fullName();
         String email = faker.name().lastName() + UUID.randomUUID() + "@lianwei.com.cn";
         Integer age = random.nextInt(1, 100);
+        Gender gender=Gender.MALE;
+        String password="password";
         //用户注册
-        CustomerRegistrationRquest request = new CustomerRegistrationRquest(name, email, age);
+        CustomerRegistrationRquest request = new CustomerRegistrationRquest(name, email, age,gender,password);
 
         //发送post
         webTestClient.post()
@@ -55,7 +58,7 @@ public class CustomerIntegrationTest {
                 })
                 .returnResult().getResponseBody();
 
-        Customer customer = new Customer(name, email, age);
+        Customer customer = new Customer(name, email, age, Gender.MALE, "password");
         assertThat(customers).usingRecursiveFieldByFieldElementComparatorIgnoringFields("id")
                 .contains(customer);
 
@@ -80,8 +83,10 @@ public class CustomerIntegrationTest {
         String name = faker.name().fullName();
         String email = faker.name().lastName() + UUID.randomUUID() + "@lianwei.com.cn";
         Integer age = random.nextInt(1, 100);
+        Gender gender=Gender.MALE;
+        String password="password";
         //用户注册
-        CustomerRegistrationRquest request = new CustomerRegistrationRquest(name, email, age);
+        CustomerRegistrationRquest request = new CustomerRegistrationRquest(name, email, age,gender,password);
 
         //发送post创建用户
         webTestClient.post()
@@ -130,8 +135,10 @@ public class CustomerIntegrationTest {
         String name = faker.name().fullName();
         String email = faker.name().lastName() + UUID.randomUUID() + "@lianwei.com.cn";
         Integer age = random.nextInt(1, 100);
+        Gender gender=Gender.MALE;
+        String password="password";
         //用户注册
-        CustomerRegistrationRquest request = new CustomerRegistrationRquest(name, email, age);
+        CustomerRegistrationRquest request = new CustomerRegistrationRquest(name, email, age,gender,password);
 
         //发送post创建用户
         webTestClient.post()
@@ -157,7 +164,7 @@ public class CustomerIntegrationTest {
         System.out.println("test id: "+ id);
         String email1=faker.name().firstName() + UUID.randomUUID() + "@lianwei.com.cn";
 
-        CustomerUpdateRequest updateRequest = new CustomerUpdateRequest(null, email1, null);
+        CustomerUpdateRequest updateRequest = new CustomerUpdateRequest(null, email1, null,null,null);
         webTestClient.put()
                 .uri(URI+"/{id}", id)
                 .accept(MediaType.APPLICATION_JSON)
@@ -178,7 +185,7 @@ public class CustomerIntegrationTest {
                 .returnResult()
                 .getResponseBody();
 
-        Customer expected=new Customer(id,name,email1,age);
+        Customer expected=new Customer(id,name,email1,age, gender, "password");
         assertThat(customer).isEqualTo(expected);
     }
 }

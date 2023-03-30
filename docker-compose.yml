@@ -26,6 +26,20 @@ services:
     depends_on:
       - db
     restart: unless-stopped
+  spring3-react:
+    container_name: spring3-react
+    image: kobe4cn/spring3-react
+    build:
+      context: frontend/react
+      args:
+        api_base_url: "http://localhost:8080"
+    ports:
+      - 3000:5173
+    networks:
+      - postgres
+    depends_on:
+      - spring3-api
+    restart: unless-stopped
 
   pgadmin:
     container_name: pgadmin

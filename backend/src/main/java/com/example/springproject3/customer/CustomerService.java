@@ -4,17 +4,19 @@ import com.example.springproject3.exception.BadRequestException;
 import com.example.springproject3.exception.DuplicateResourceException;
 import com.example.springproject3.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class CustomerService {
     private final CustomerDao customerDao;
+    private final PasswordEncoder passwordEncoder;
 
-    public CustomerService(@Qualifier("jpa") CustomerDao customerDao) {
+    public CustomerService(@Qualifier("jpa") CustomerDao customerDao, PasswordEncoder passwordEncoder) {
         this.customerDao = customerDao;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<Customer> getAllCustomers(){
@@ -35,7 +37,7 @@ public class CustomerService {
         }else{
             Customer  customer=new Customer(customerRegistrationRquest.name(),
                     customerRegistrationRquest.email(),
-                    customerRegistrationRquest.age());
+                    customerRegistrationRquest.age(), customerRegistrationRquest.gender(), passwordEncoder.encode(customerRegistrationRquest.password()));
             customerDao.insertCustomer(customer);
         }
 
@@ -66,6 +68,10 @@ public class CustomerService {
         }
         if(customerUpdateRequest.age()!=null && customer.getAge()!=customerUpdateRequest.age()){
             customer.setAge(customerUpdateRequest.age());
+            change=true;
+        }
+        if(customerUpdateRequest.gender()!=null && customer.getGender()!=customerUpdateRequest.gender()){
+            customer.setGender(customerUpdateRequest.gender());
             change=true;
         }
         if(!change){

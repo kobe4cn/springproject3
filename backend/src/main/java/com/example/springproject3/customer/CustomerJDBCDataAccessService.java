@@ -21,7 +21,7 @@ public class CustomerJDBCDataAccessService implements CustomerDao{
     @Override
     public List<Customer> selectAllCustomers() {
         var sql= """
-                select id,name,email,age
+                select id,name,email,age,gender,password
                 from customer
                 """;
 
@@ -31,7 +31,7 @@ public class CustomerJDBCDataAccessService implements CustomerDao{
     @Override
     public Optional<Customer> selectCustomerById(Integer id) {
         var sql= """
-                 select id,name,email,age from customer where id=?
+                 select id,name,email,age,gender,password from customer where id=?
                 """;
         return jdbcTemplate.query(sql,customerRowMapper,id).stream().findFirst();
 
@@ -40,13 +40,15 @@ public class CustomerJDBCDataAccessService implements CustomerDao{
     @Override
     public void insertCustomer(Customer customer) {
         var sql= """
-                insert into customer(name,email,age)
-                values(?,?,?)
+                insert into customer(name,email,age,gender,password)
+                values(?,?,?,?,?)
                  """;
         int update=jdbcTemplate.update(sql,
                 customer.getName(),
                 customer.getEmail(),
-                customer.getAge()
+                customer.getAge(),
+                customer.getGender().name(),
+                customer.getPassword()
         );
         System.out.println("jdbctemplate "+ update);
     }
@@ -106,5 +108,29 @@ public class CustomerJDBCDataAccessService implements CustomerDao{
                 """;
             jdbcTemplate.update(sql,customer.getAge(),customer.getId());
         }
+        if(customer.getGender()!=null){
+            var sql= """
+                update customer set gender=?
+                where id=?
+                """;
+            jdbcTemplate.update(sql,customer.getGender().toString(),customer.getId());
+        }
+        if(customer.getPassword()!=null){
+            var sql= """
+                update customer set password=?
+                where id=?
+                """;
+            jdbcTemplate.update(sql,customer.getPassword(),customer.getId());
+        }
+
+    }
+
+    @Override
+    public Optional<Customer> selectUserByEmail(String email) {
+
+        var sql= """
+                 select id,name,email,age,gender,password from customer where email=?
+                """;
+        return jdbcTemplate.query(sql,customerRowMapper,email).stream().findFirst();
     }
 }

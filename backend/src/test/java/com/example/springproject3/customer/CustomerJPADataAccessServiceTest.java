@@ -10,8 +10,6 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class CustomerJPADataAccessServiceTest {
     private CustomerJPADataAccessService  underTest;
     private AutoCloseable autoCloseable;
@@ -53,8 +51,8 @@ class CustomerJPADataAccessServiceTest {
         Customer customer=new Customer(
                 FAKER.name().fullName(),
                 FAKER.internet().emailAddress()+ "-" + UUID.randomUUID(),
-                20
-        );
+                20,
+                Gender.MALE, "password");
 
         underTest.insertCustomer(customer);
         Mockito.verify(customerRepository).save(customer);
@@ -87,8 +85,8 @@ class CustomerJPADataAccessServiceTest {
         Customer customer=new Customer(
                 FAKER.name().fullName(),
                 FAKER.internet().emailAddress()+ "-" + UUID.randomUUID(),
-                20
-        );
+                20,
+                Gender.MALE, "password");
 
         underTest.updateCustomer(customer);
         Mockito.verify(customerRepository).save(customer);

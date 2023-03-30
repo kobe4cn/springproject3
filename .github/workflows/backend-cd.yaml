@@ -43,7 +43,7 @@ jobs:
           curl -X POST -H 'Content-type: application/json'
           --data '{"text":":github: https://github.com/kobe4cn/springproject3/commit/${{ github.sha }} - ${{ github.event.head_commit.message }}"}' 
           ${{ secrets.SLACK_WEBHOOK_URL }}
-      - name: Send Slack Message
+      - name: 准备开始编译打包镜像
         run: >
           curl -X POST -H 'Content-type: application/json'
           --data '{"text":"Deployment started :progress_bar: :fingerscrossed:"}' 
@@ -77,11 +77,11 @@ jobs:
       - name: 更新Dockerrun.aws.json文件中的image拉取版本号
         run: | 
           echo "更新Dockerrun.aws.json 前"
-          cat Dockerrun.aws.json
+          cat ../../Dockerrun.aws.json
           echo "开始更新dockerrun文件"
-          sed -i -E 's_(kobe4cn/springboot3-api:)([^"]*)_\1'${{steps.build-number.outputs.BUILD_NUMBER}}'_' Dockerrun.aws.json
+          sed -i -E 's_(kobe4cn/springboot3-api:)([^"]*)_\1'${{steps.build-number.outputs.BUILD_NUMBER}}'_' ../../Dockerrun.aws.json
           echo "更新完dockerrun文件"
-          cat Dockerrun.aws.json
+          cat ../../Dockerrun.aws.json
       - name: Send Slack Message
         run: >
           curl -X POST -H 'Content-type: application/json' 
@@ -97,7 +97,7 @@ jobs:
           version_label: ${{ steps.build-number.outputs.BUILD_NUMBER }}
           version_description: ${{ github.SHA }}
           region: ${{ secrets.EB_REGION }}
-          deployment_package: backend/Dockerrun.aws.json
+          deployment_package: Dockerrun.aws.json
       - name: Send Slack Message
         run: >
           curl -X POST -H 'Content-type: application/json' 
@@ -107,7 +107,7 @@ jobs:
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add .
+          git add ../../Dockerrun.aws.json
           git commit -m "更新 Dockerrun.aws.json docker image tag ${{ steps.build-number.outputs.BUILD_NUMBER }}"
           git push
       - name: Send Slack Message

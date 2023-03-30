@@ -22,7 +22,8 @@
         <maven.compiler.target>17</maven.compiler.target>
         <docker.username>kobe4cn</docker.username>
         <docker.image.name>springboot3-api</docker.image.name>
-        <docker.image.tag/>
+        <docker.image.tag>latest</docker.image.tag>
+        <jsonwebtoken.version>0.11.5</jsonwebtoken.version>
     </properties>
     <dependencies>
         <dependency>
@@ -90,6 +91,31 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jsonwebtoken.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jsonwebtoken.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId> <!-- or jjwt-gson if Gson is preferred -->
+            <version>${jsonwebtoken.version}</version>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
     <build>
@@ -191,6 +217,16 @@
                             <tag>latest</tag>
                         </tags>
                     </to>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>9.5.1</version>
+                <configuration>
+                    <url>jdbc:postgresql://localhost:5432/customer</url>
+                    <user>kevin</user>
+                    <password>password</password>
                 </configuration>
             </plugin>
         </plugins>
