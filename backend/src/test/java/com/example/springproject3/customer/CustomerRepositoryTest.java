@@ -34,4 +34,9 @@ class CustomerRepositoryTest extends AbstractTestcontainers {
         boolean b = underTest.existsCustomerByEmail(customer.getEmail());
         assertThat(b).isTrue();
     }
+
+    @Test
+    void findCustomerByEmail(){
+
+    }
 }
