@@ -1,14 +1,13 @@
 package com.example.springproject3.journey;
 
-import com.example.springproject3.customer.Customer;
-import com.example.springproject3.customer.CustomerRegistrationRquest;
-import com.example.springproject3.customer.CustomerUpdateRequest;
-import com.example.springproject3.customer.Gender;
+import com.example.springproject3.customer.*;
 import com.github.javafaker.Faker;
+import com.github.javafaker.Name;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
@@ -25,6 +24,8 @@ public class CustomerIntegrationTest {
     private WebTestClient webTestClient;
     private static Random random = new Random();
 
+    private final CustomerDTOMapper customerDTOMapper=new CustomerDTOMapper();
+
     private static String URI = "/api/v1/customers";
 
     @Test
@@ -36,44 +37,54 @@ public class CustomerIntegrationTest {
         Gender gender=Gender.MALE;
         String password="password";
         //用户注册
-        CustomerRegistrationRquest request = new CustomerRegistrationRquest(name, email, age,gender,password);
+        CustomerRegistrationRequest request = new CustomerRegistrationRequest(name, email, age,gender,password);
 
         //发送post
-        webTestClient.post()
+        String jwttoken = webTestClient.post()
                 .uri(URI)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Mono.just(request), CustomerRegistrationRquest.class)
+                .body(Mono.just(request), CustomerRegistrationRequest.class)
                 .exchange()
                 .expectStatus()
-                .isOk();
+                .isOk().returnResult(Void.class).getResponseHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
 
         //返回所有用户
-        List<Customer> customers = webTestClient.get()
+        List<CustomerDTO> customers = webTestClient.get()
                 .uri(URI)
                 .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION,String.format("Bearer %s",jwttoken))
                 .exchange()
                 .expectStatus().isOk()
-                .expectBodyList(new ParameterizedTypeReference<Customer>() {
+                .expectBodyList(new ParameterizedTypeReference<CustomerDTO>() {
                 })
                 .returnResult().getResponseBody();
 
-        Customer customer = new Customer(name, email, age, Gender.MALE, "password");
-        assertThat(customers).usingRecursiveFieldByFieldElementComparatorIgnoringFields("id")
-                .contains(customer);
+
 
         //从customers list中filter出对应email的ID
-        int id = customers.stream().filter(customer1 -> customer1.getEmail().equals(email)).map(customer1 -> customer1.getId()).findFirst().orElseThrow();
-        customer.setId(id);
+        int id = customers.stream()
+                .filter(customer1 -> customer1.email().equals(email))
+                .map(CustomerDTO::id)
+                .findFirst()
+                .orElseThrow();
+//        customer.setId(id);
+
+        CustomerDTO customerDTO=new CustomerDTO(id,name, email, age, Gender.MALE,List.of("ROLE_USER"),email);
+
+        assertThat(customers)
+                .contains(customerDTO);
         //根据ID返回用户
         webTestClient.get()
                 .uri(URI + "/{id}", id)
                 .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION,String.format("Bearer %s",jwttoken))
                 .exchange()
-                .expectStatus().isOk()
-                .expectBody(new ParameterizedTypeReference<Customer>() {
+                .expectStatus().
+                isOk()
+                .expectBody(new ParameterizedTypeReference<CustomerDTO>() {
                 })
-                .isEqualTo(customer);
+                .isEqualTo(customerDTO);
 
     }
 
@@ -86,36 +97,46 @@ public class CustomerIntegrationTest {
         Gender gender=Gender.MALE;
         String password="password";
         //用户注册
-        CustomerRegistrationRquest request = new CustomerRegistrationRquest(name, email, age,gender,password);
-
-        //发送post创建用户
+        CustomerRegistrationRequest request = new CustomerRegistrationRequest(name, email, age,gender,password);
+        CustomerRegistrationRequest request2 = new CustomerRegistrationRequest(name, email+".e", age,gender,password);
         webTestClient.post()
                 .uri(URI)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Mono.just(request), CustomerRegistrationRquest.class)
+                .body(Mono.just(request), CustomerRegistrationRequest.class)
                 .exchange()
                 .expectStatus()
                 .isOk();
-
-        //返回所有用户
-        List<Customer> customers = webTestClient.get()
+        //发送post创建用户
+        String jwttoken = webTestClient.post()
                 .uri(URI)
                 .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(request2), CustomerRegistrationRequest.class)
+                .exchange()
+                .expectStatus()
+                .isOk().returnResult(Void.class).getResponseHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
+
+        //返回所有用户
+        List<CustomerDTO> customers = webTestClient.get()
+                .uri(URI)
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION,String.format("Bearer %s",jwttoken))
                 .exchange()
                 .expectStatus().isOk()
-                .expectBodyList(new ParameterizedTypeReference<Customer>() {
+                .expectBodyList(new ParameterizedTypeReference<CustomerDTO>() {
                 })
                 .returnResult().getResponseBody();
 
 
         //从customers list中filter出对应email的ID
-        int id = customers.stream().filter(customer1 -> customer1.getEmail().equals(email)).map(customer1 -> customer1.getId()).findFirst().orElseThrow();
+        int id = customers.stream().filter(customer1 -> customer1.email().equals(email)).map(customer1 -> customer1.id()).findFirst().orElseThrow();
 
         //删除 ID
         webTestClient.delete()
                 .uri(URI + "/{id}", id)
                 .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION,String.format("Bearer %s",jwttoken))
                 .exchange()
                 .expectStatus()
                 .isOk();
@@ -124,6 +145,7 @@ public class CustomerIntegrationTest {
         webTestClient.get()
                 .uri(URI + "/{id}", id)
                 .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION,String.format("Bearer %s",jwttoken))
                 .exchange()
                 .expectStatus()
                 .isNotFound();
@@ -138,22 +160,23 @@ public class CustomerIntegrationTest {
         Gender gender=Gender.MALE;
         String password="password";
         //用户注册
-        CustomerRegistrationRquest request = new CustomerRegistrationRquest(name, email, age,gender,password);
+        CustomerRegistrationRequest request = new CustomerRegistrationRequest(name, email, age,gender,password);
 
         //发送post创建用户
-        webTestClient.post()
+        String jwttoken = webTestClient.post()
                 .uri(URI)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Mono.just(request), CustomerRegistrationRquest.class)
+                .body(Mono.just(request), CustomerRegistrationRequest.class)
                 .exchange()
                 .expectStatus()
-                .isOk();
+                .isOk().returnResult(Void.class).getResponseHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
 
         //返回所有用户
         List<Customer> customers = webTestClient.get()
                 .uri(URI)
                 .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION,String.format("Bearer %s",jwttoken))
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(new ParameterizedTypeReference<Customer>() {
@@ -162,30 +185,45 @@ public class CustomerIntegrationTest {
 
         int id = customers.stream().filter(customer1 -> customer1.getEmail().equals(email)).map(customer1 -> customer1.getId()).findFirst().orElseThrow();
         System.out.println("test id: "+ id);
-        String email1=faker.name().firstName() + UUID.randomUUID() + "@lianwei.com.cn";
 
-        CustomerUpdateRequest updateRequest = new CustomerUpdateRequest(null, email1, null,null,null);
+
+        CustomerUpdateRequest updateRequest = new CustomerUpdateRequest("kevinyang", null, null,null,null);
         webTestClient.put()
                 .uri(URI+"/{id}", id)
                 .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION,String.format("Bearer %s",jwttoken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(Mono.just(updateRequest), CustomerUpdateRequest.class)
                 .exchange()
                 .expectStatus()
                 .isOk();
 
-        Customer customer = webTestClient.get()
+
+
+        CustomerDTO customer = webTestClient.get()
                 .uri(URI+"/{id}", id)
                 .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION,String.format("Bearer %s",jwttoken))
                 .exchange()
                 .expectStatus()
                 .isOk()
-                .expectBody(new ParameterizedTypeReference<Customer>() {
+                .expectBody(new ParameterizedTypeReference<CustomerDTO>() {
                 })
                 .returnResult()
                 .getResponseBody();
+        CustomerDTO customerDTO=new CustomerDTO(
+          id,
+          "kevinyang",
+          email,
+          age,
+          gender,
+          List.of("ROLE_USER"),
+          email
+        );
 
-        Customer expected=new Customer(id,name,email1,age, gender, "password");
-        assertThat(customer).isEqualTo(expected);
+        assertThat(customer).isEqualTo(customerDTO);
+
+
+
     }
 }

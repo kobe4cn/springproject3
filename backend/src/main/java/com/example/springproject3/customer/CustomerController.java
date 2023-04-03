@@ -21,17 +21,17 @@ public class CustomerController {
 
 
     @GetMapping
-    public List<Customer> getCustomer(){
+    public List<CustomerDTO> getCustomer(){
         return customerService.getAllCustomers();
     }
 
     @GetMapping("/{customerId}")
-    public Customer getCustmerById(@PathVariable("customerId") Integer id){
+    public CustomerDTO getCustmerById(@PathVariable("customerId") Integer id){
         return customerService.getCustomerById(id);
     }
 
     @PostMapping
-    public ResponseEntity<?> registerCustomer(@RequestBody CustomerRegistrationRquest customerRegistrationRquest){
+    public ResponseEntity<?> registerCustomer(@RequestBody CustomerRegistrationRequest customerRegistrationRquest){
         customerService.addCustomer(customerRegistrationRquest);
         String token = jwtUtil.issueToken(customerRegistrationRquest.email(), "ROLE_USER");
         return ResponseEntity.ok()

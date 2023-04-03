@@ -8,28 +8,34 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CustomerService {
     private final CustomerDao customerDao;
     private final PasswordEncoder passwordEncoder;
 
-    public CustomerService(@Qualifier("jpa") CustomerDao customerDao, PasswordEncoder passwordEncoder) {
+    private final CustomerDTOMapper customerDTOMapper;
+
+    public CustomerService(@Qualifier("jpa") CustomerDao customerDao, PasswordEncoder passwordEncoder, CustomerDTOMapper customerDTOMapper) {
         this.customerDao = customerDao;
         this.passwordEncoder = passwordEncoder;
+        this.customerDTOMapper = customerDTOMapper;
     }
 
-    public List<Customer> getAllCustomers(){
-        return customerDao.selectAllCustomers();
+    public List<CustomerDTO> getAllCustomers(){
+        return customerDao.selectAllCustomers().stream().map(customerDTOMapper).collect(Collectors.toList());
     }
 
-    public Customer getCustomerById(Integer id){
-        return customerDao.selectCustomerById(id).orElseThrow(() ->
+    public CustomerDTO getCustomerById(Integer id){
+        return customerDao.selectCustomerById(id)
+                .map(customerDTOMapper)
+                .orElseThrow(() ->
             new ResourceNotFoundException("用户id [%s] 不存在".formatted(id))
         );
     }
 
-    public void addCustomer(CustomerRegistrationRquest customerRegistrationRquest){
+    public void addCustomer(CustomerRegistrationRequest customerRegistrationRquest){
         String email= customerRegistrationRquest.email();
         if(customerDao.existsPersonWithEmail(email)){
             throw new DuplicateResourceException(
@@ -53,7 +59,9 @@ public class CustomerService {
 
     public void updateCustomer(Integer customerId,CustomerUpdateRequest customerUpdateRequest){
 
-        Customer customer=getCustomerById(customerId);
+        Customer customer = customerDao.selectCustomerById(customerId).orElseThrow(() ->
+                new ResourceNotFoundException("用户id [%s] 不存在".formatted(customerId))
+        );
         boolean change=false;
         if(customerUpdateRequest.name()!=null && !customer.getName().equals(customerUpdateRequest.name())){
             customer.setName(customerUpdateRequest.name());

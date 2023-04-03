@@ -3,8 +3,10 @@ package com.example.springproject3.customer;
 import com.example.springproject3.exception.BadRequestException;
 import com.example.springproject3.exception.DuplicateResourceException;
 import com.example.springproject3.exception.ResourceNotFoundException;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -22,14 +24,17 @@ import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class CustomerServiceTest {
+
     private CustomerService underTest;
     @Mock
     private CustomerDao customerDao;
     @Mock
     private PasswordEncoder encoder;
+
+    private CustomerDTOMapper customerDTOMapper=new CustomerDTOMapper();
     @BeforeEach
     void setUp() {
-        underTest=new CustomerService(customerDao, encoder);
+        underTest=new CustomerService(customerDao, encoder, customerDTOMapper);
 
     }
 
@@ -43,14 +48,16 @@ class CustomerServiceTest {
         verify(customerDao).selectAllCustomers();
     }
 
+
     @Test
     void cangetCustomerById() {
-        int id=10;
+        int id=1;
         Customer customer=new Customer(
                 id,"kevin","kevin.yang@lianwei.com.cn",40,Gender.MALE,
                 "password");
         Mockito.when(customerDao.selectCustomerById(id)).thenReturn(Optional.of(customer));
-        assertThat(underTest.getCustomerById(id)).isEqualTo(customer);
+        CustomerDTO expected=customerDTOMapper.apply(customer);
+        assertThat(underTest.getCustomerById(id)).isEqualTo(expected);
     }
 
     @Test
@@ -69,7 +76,7 @@ class CustomerServiceTest {
     void addCustomer() {
         String email="kevin.yang@lianwei.com.cn";
         Mockito.when(customerDao.existsPersonWithEmail(email)).thenReturn(false);
-        CustomerRegistrationRquest request=new CustomerRegistrationRquest("kevin",email,40,Gender.MALE,"password");
+        CustomerRegistrationRequest request=new CustomerRegistrationRequest("kevin",email,40,Gender.MALE,"password");
 
         underTest.addCustomer(request);
 
@@ -89,7 +96,7 @@ class CustomerServiceTest {
         String email="kevin.yang@lianwei.com.cn";
         Mockito.when(customerDao.existsPersonWithEmail(email)).thenReturn(true);
 
-        CustomerRegistrationRquest request=new CustomerRegistrationRquest("kevin",email,40,Gender.MALE,"password");
+        CustomerRegistrationRequest request=new CustomerRegistrationRequest("kevin",email,40,Gender.MALE,"password");
         assertThatThrownBy(() -> underTest.addCustomer(request)).isInstanceOf(DuplicateResourceException.class)
                         .hasMessageContaining("电子邮件 [%s] 已经存在".formatted(email));
 

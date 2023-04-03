@@ -1,6 +1,6 @@
 package com.example.springproject3.customer;
 
-public record CustomerRegistrationRquest(
+public record CustomerRegistrationRequest(
         String name,String email,Integer age,Gender gender,String password
 ) {
 
