@@ -51,6 +51,7 @@ const CreateCustomerForm = ({fetchCustomers}) => {
                     email: '',
                     age: 0,
                     gender: '',
+                    password: '',
                 }}
                 validationSchema={Yup.object({
                     name: Yup.string()
@@ -69,6 +70,9 @@ const CreateCustomerForm = ({fetchCustomers}) => {
                             'Invalid gender'
                         )
                         .required('请选择性别'),
+                    password: Yup.string()
+                        .max(20, 'Must be 20 characters or less')
+                        .required('请创建密码'),
                 })}
                 onSubmit={(customer, { setSubmitting }) => {
                     setSubmitting(false);
@@ -114,9 +118,13 @@ const CreateCustomerForm = ({fetchCustomers}) => {
                                 <option value="">性别</option>
                                 <option value="MALE">男士</option>
                                 <option value="FEMALE">女士</option>
-
                             </MySelect>
-
+                            <MyTextInput
+                                label="Password"
+                                name="password"
+                                type="password"
+                                placeholder="密码"
+                            />
                             <Button isDisabled={!isValid || isSubmitting}  colorScheme={"teal"} type="submit">提交</Button>
                         </Stack>
                     </Form>

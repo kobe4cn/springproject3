@@ -35,6 +35,14 @@ public class CustomerService {
         );
     }
 
+    public CustomerDTO getCustomerByEmail(String email){
+        return customerDao.selectUserByEmail(email)
+                .map(customerDTOMapper)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Email [%s] 不存在".formatted(email))
+                );
+    }
+
     public void addCustomer(CustomerRegistrationRequest customerRegistrationRquest){
         String email= customerRegistrationRquest.email();
         if(customerDao.existsPersonWithEmail(email)){
