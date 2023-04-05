@@ -27,7 +27,7 @@ const CreateCustomerDrawer=({fetchCustomers})=>{
             <DrawerHeader>创建用户</DrawerHeader>
 
             <DrawerBody>
-                <CreateCustomerForm fetchCustomers={fetchCustomers}></CreateCustomerForm>
+                <CreateCustomerForm onSuccess={fetchCustomers}></CreateCustomerForm>
             </DrawerBody>
 
             <DrawerFooter>

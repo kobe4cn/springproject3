@@ -107,6 +107,9 @@ const Login= ()=> {
                 <Stack spacing={4} w={'full'} maxW={'md'}>
                     <Heading fontSize={'2xl'} mb={15}>Sign in to your account</Heading>
                     <LoginForm/>
+                    <Link color={"blue.500"} href={"/signup"}>
+                        注册
+                    </Link>
                 </Stack>
             </Flex>
             <Flex flex={1}>

@@ -42,7 +42,7 @@ const MySelect = ({ label, ...props }) => {
 };
 
 // And now we can use these
-const CreateCustomerForm = ({fetchCustomers}) => {
+const CreateCustomerForm = ({onSuccess}) => {
     return (
         <>
             <Formik
@@ -80,7 +80,7 @@ const CreateCustomerForm = ({fetchCustomers}) => {
                         console.log(res);
                         successNotification("用户创建成功",`${customer.name}成功创建`
                             );
-                        fetchCustomers();
+                        onSuccess(res.headers["authorization"])
                     }).catch(err=>{
                         errorNotification(err.code,err.response.data.message);
                     }).finally(()=>{
