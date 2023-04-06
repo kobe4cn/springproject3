@@ -3,11 +3,17 @@ package com.example.springproject3.customer;
 import com.example.springproject3.exception.BadRequestException;
 import com.example.springproject3.exception.DuplicateResourceException;
 import com.example.springproject3.exception.ResourceNotFoundException;
+import com.example.springproject3.s3.S3Buckets;
+import com.example.springproject3.s3.S3Service;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -17,10 +23,16 @@ public class CustomerService {
 
     private final CustomerDTOMapper customerDTOMapper;
 
-    public CustomerService(@Qualifier("jpa") CustomerDao customerDao, PasswordEncoder passwordEncoder, CustomerDTOMapper customerDTOMapper) {
+    private final S3Service s3Service;
+
+    private final S3Buckets s3Buckets;
+
+    public CustomerService(@Qualifier("jpa") CustomerDao customerDao, PasswordEncoder passwordEncoder, CustomerDTOMapper customerDTOMapper, S3Service s3Service, S3Buckets s3Buckets) {
         this.customerDao = customerDao;
         this.passwordEncoder = passwordEncoder;
         this.customerDTOMapper = customerDTOMapper;
+        this.s3Service = s3Service;
+        this.s3Buckets = s3Buckets;
     }
 
     public List<CustomerDTO> getAllCustomers(){
@@ -51,16 +63,20 @@ public class CustomerService {
         }else{
             Customer  customer=new Customer(customerRegistrationRquest.name(),
                     customerRegistrationRquest.email(),
-                    customerRegistrationRquest.age(), customerRegistrationRquest.gender(), passwordEncoder.encode(customerRegistrationRquest.password()));
+                    customerRegistrationRquest.age(), customerRegistrationRquest.gender(), passwordEncoder.encode(customerRegistrationRquest.password()),"");
             customerDao.insertCustomer(customer);
         }
-
     }
 
     public void deleteCustomer(Integer id){
-        if(customerDao.existsPersonWithId(id)){
-            customerDao.deleteCustomer(id);
-        }else {
+        checkCustomerExistedOrThrow(id);
+        customerDao.deleteCustomer(id);
+    }
+
+    private void checkCustomerExistedOrThrow(Integer id) {
+        if(!customerDao.existsPersonWithId(id)){
+
+
             throw new ResourceNotFoundException("customer with id [%s] not found".formatted(id));
         }
     }
@@ -100,7 +116,32 @@ public class CustomerService {
     }
 
 
+    public void uploadCustomerImage(Integer customerId, MultipartFile file) {
+        checkCustomerExistedOrThrow(customerId);
+        String imageID = UUID.randomUUID().toString();
+        try {
+
+            s3Service.putObject(s3Buckets.getCustomer(), "/images/%s/%s".formatted(customerId, imageID), file.getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException("failed to upload profile image",e);
+        }
+        //Store image to db
+        customerDao.updateCustomerProfileImageId(imageID,customerId);
 
 
+    }
 
+    public byte[] getCustomerImage(Integer customerId) {
+        var customer=customerDao.selectCustomerById(customerId).map(customerDTOMapper)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "用户 %s 不存在".formatted(customerId)
+                ));
+        if(StringUtils.isBlank(customer.profileImageId())){
+            throw new ResourceNotFoundException(
+                    "用户 %s 图片 不存在".formatted(customerId));
+        }
+        var imageID=customer.profileImageId();
+        byte[] image = s3Service.getObject(s3Buckets.getCustomer(), "/images/%s/%s".formatted(customerId, imageID));
+        return image;
+    }
 }

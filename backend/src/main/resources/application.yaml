@@ -24,3 +24,8 @@ management:
       exposure:
         include: "health,info"
 
+aws:
+  region: ap-northeast-1
+  s3:
+    buckets:
+      customer: springboot3-test

@@ -21,7 +21,7 @@ public class CustomerJDBCDataAccessService implements CustomerDao{
     @Override
     public List<Customer> selectAllCustomers() {
         var sql= """
-                select id,name,email,age,gender,password
+                select id,name,email,age,gender,password,profile_image_id
                 from customer
                 LIMIT 1000
                 """;
@@ -32,7 +32,7 @@ public class CustomerJDBCDataAccessService implements CustomerDao{
     @Override
     public Optional<Customer> selectCustomerById(Integer id) {
         var sql= """
-                 select id,name,email,age,gender,password from customer where id=?
+                 select id,name,email,age,gender,password,profile_image_id from customer where id=?
                 """;
         return jdbcTemplate.query(sql,customerRowMapper,id).stream().findFirst();
 
@@ -130,8 +130,18 @@ public class CustomerJDBCDataAccessService implements CustomerDao{
     public Optional<Customer> selectUserByEmail(String email) {
 
         var sql= """
-                 select id,name,email,age,gender,password from customer where email=?
+                 select id,name,email,age,gender,password,profile_image_id from customer where email=?
                 """;
         return jdbcTemplate.query(sql,customerRowMapper,email).stream().findFirst();
+    }
+
+    @Override
+    public void updateCustomerProfileImageId(String profileImageID, Integer CustomerId) {
+        var sql= """
+                update customer
+                set profile_image_id=?
+                where id= ?
+                """;
+        jdbcTemplate.update(sql,profileImageID,CustomerId);
     }
 }

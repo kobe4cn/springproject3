@@ -16,4 +16,6 @@ public interface CustomerDao {
 
     Optional<Customer> selectUserByEmail(String email);
 
+    void updateCustomerProfileImageId(String profileImageID,Integer CustomerId);
+
 }

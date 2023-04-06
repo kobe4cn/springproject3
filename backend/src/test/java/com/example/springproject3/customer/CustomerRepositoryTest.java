@@ -2,11 +2,14 @@ package com.example.springproject3.customer;
 
 import com.example.springproject3.AbstractTestcontainers;
 import com.example.springproject3.Testconfig;
+import com.example.springproject3.s3.S3Buckets;
+import com.example.springproject3.s3.S3Service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 
 import java.util.Optional;
@@ -16,13 +19,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import(Testconfig.class)
+@Import({Testconfig.class})
 class CustomerRepositoryTest extends AbstractTestcontainers {
     @Autowired
     private CustomerRepository underTest;
+    @Autowired
+    private ApplicationContext applicationContext;
+
+
     @BeforeEach
     void setUp() {
-
+        underTest.deleteAll();
+        System.out.println(applicationContext.getBeanDefinitionCount());
     }
 
     @Test

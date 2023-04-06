@@ -2,7 +2,6 @@ package com.example.springproject3.journey;
 
 import com.example.springproject3.customer.*;
 import com.github.javafaker.Faker;
-import com.github.javafaker.Name;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -70,7 +69,7 @@ public class CustomerIntegrationTest {
                 .orElseThrow();
 //        customer.setId(id);
 
-        CustomerDTO customerDTO=new CustomerDTO(id,name, email, age, Gender.MALE,List.of("ROLE_USER"),email);
+        CustomerDTO customerDTO=new CustomerDTO(id,name, email, age, Gender.MALE,List.of("ROLE_USER"),email,null );
 
         assertThat(customers)
                 .contains(customerDTO);
@@ -218,7 +217,7 @@ public class CustomerIntegrationTest {
           age,
           gender,
           List.of("ROLE_USER"),
-          email
+          email,null
         );
 
         assertThat(customer).isEqualTo(customerDTO);
