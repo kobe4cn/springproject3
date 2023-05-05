@@ -40,19 +40,19 @@ public class Springproject3Application {
 //        System.out.println(new String(object));
 //    }
 
-//    private static void createRandomCustomer(CustomerRepository customerRepository, PasswordEncoder passwordEncoder) {
-//        Faker faker = new Faker();
-//        Random random=new Random();
-//        Integer age=random.nextInt(20,99);
-//        Gender gender=age%2==0?Gender.MALE:Gender.FEMALE;
-//        Customer customer=new Customer(
-//            faker.name().fullName(),
-//            faker.internet().emailAddress(),
-//                age,
-//                gender, passwordEncoder.encode("password"));
-//
-//        customerRepository.save(customer);
-//    }
+    private static void createRandomCustomer(CustomerRepository customerRepository, PasswordEncoder passwordEncoder) {
+        Faker faker = new Faker();
+        Random random=new Random();
+        Integer age=random.nextInt(20,99);
+        Gender gender=age%2==0?Gender.MALE:Gender.FEMALE;
+        Customer customer=new Customer(
+            faker.name().fullName(),
+            faker.internet().emailAddress(),
+                age,
+                gender, passwordEncoder.encode("password"));
+
+        customerRepository.save(customer);
+    }
 
 
 }

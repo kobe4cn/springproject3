@@ -18,7 +18,7 @@ import {
     AlertDialogFooter, useDisclosure,
 } from '@chakra-ui/react';
  import {useRef} from "react";
-import {deleteCustomer} from "../services/client.js";
+import {customerProfilePictureUrl, deleteCustomer} from "../services/client.js";
 import {errorNotification, successNotification} from "../services/notification.js";
 import UpdateCustomerDrawer from "./UpdateCustomerDrawer.jsx";
 
@@ -52,7 +52,7 @@ export default function CardWithImage({id,name,age,email,gender,fetchCustomers})
                     <Avatar
                         size={'xl'}
                         src={
-                            `https://randomuser.me/api/portraits/${gender=='MALE'?'men':'women'}/${id}.jpg`
+                            customerProfilePictureUrl(id)
                         }
                         alt={name}
                         css={{

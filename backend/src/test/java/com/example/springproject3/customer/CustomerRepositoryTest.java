@@ -58,4 +58,22 @@ class CustomerRepositoryTest extends AbstractTestcontainers {
         Optional<Customer> customerByEmail = underTest.findCustomerByEmail(customer.getEmail());
         assertThat(customerByEmail).isNotNull();
     }
+
+    @Test
+    void canUpdateProfileImageId(){
+        Customer customer=new Customer(
+                FAKER.name().fullName(),
+                FAKER.internet().emailAddress()+ "-" + UUID.randomUUID(),
+                20,
+                Gender.MALE, "password");
+        underTest.save(customer);
+        Optional<Customer> customerByEmail = underTest.findCustomerByEmail(customer.getEmail());
+        underTest.updateProfileImageId("dddd",customerByEmail.get().getId());
+        Optional<Customer> customerOptional = underTest.findById(customerByEmail.get().getId());
+
+        assertThat(customerOptional).isPresent().hasValueSatisfying(customer1 -> {
+            assertThat(customer1.getProfileImageId()).isEqualTo("dddd");
+        });
+
+    }
 }

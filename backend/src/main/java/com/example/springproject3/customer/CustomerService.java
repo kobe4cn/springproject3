@@ -63,7 +63,7 @@ public class CustomerService {
         }else{
             Customer  customer=new Customer(customerRegistrationRquest.name(),
                     customerRegistrationRquest.email(),
-                    customerRegistrationRquest.age(), customerRegistrationRquest.gender(), passwordEncoder.encode(customerRegistrationRquest.password()),"");
+                    customerRegistrationRquest.age(), customerRegistrationRquest.gender(), passwordEncoder.encode(customerRegistrationRquest.password()));
             customerDao.insertCustomer(customer);
         }
     }

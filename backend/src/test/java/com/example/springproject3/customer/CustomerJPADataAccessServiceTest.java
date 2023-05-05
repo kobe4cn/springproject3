@@ -102,4 +102,12 @@ class CustomerJPADataAccessServiceTest {
         underTest.updateCustomer(customer);
         Mockito.verify(customerRepository).save(customer);
     }
+
+    @Test
+    void canUpdateProfileImageId(){
+        String profileImageId="2222";
+        Integer customerId=1;
+        underTest.updateCustomerProfileImageId(profileImageId,customerId);
+        Mockito.verify(customerRepository).updateProfileImageId(profileImageId,customerId);
+    }
 }
